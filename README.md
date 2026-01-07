@@ -200,14 +200,7 @@ Proyek ini dikembangkan sebagai bagian dari UTS Pemrograman Web dengan topik:
 - ✅ Validasi data lengkap
 - ✅ Fitur tambahan: QR Code, notifikasi, export laporan
 
-## 🤝 Kontribusi
 
-Untuk berkontribusi pada proyek ini:
-1. Fork repository
-2. Buat branch fitur (`git checkout -b feature/AmazingFeature`)
-3. Commit perubahan (`git commit -m 'Add some AmazingFeature'`)
-4. Push ke branch (`git push origin feature/AmazingFeature`)
-5. Buat Pull Request
 
 ## 📄 License
 
