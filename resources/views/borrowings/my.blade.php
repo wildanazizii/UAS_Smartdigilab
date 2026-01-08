@@ -19,6 +19,7 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alat</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pinjam</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Kembali</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -31,6 +32,9 @@
                                 <td class="px-6 py-4">
                                     <div class="text-sm font-medium text-gray-900">{{ $borrowing->equipment->name }}</div>
                                     <div class="text-sm text-gray-500">{{ $borrowing->equipment->code }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    {{ $borrowing->jumlah ?? 1 }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <i class="fas fa-calendar mr-1"></i>
@@ -57,7 +61,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                                     @if($borrowing->request_letter_path)
-                                        <a href="{{ asset('storage/' . $borrowing->request_letter_path) }}" target="_blank" class="text-blue-600 hover:text-blue-900">
+                                        <a href="{{ route('borrowings.letter', $borrowing) }}" target="_blank" class="text-blue-600 hover:text-blue-900">
                                             <i class="fas fa-file-arrow-up mr-1"></i>Lihat
                                         </a>
                                     @else

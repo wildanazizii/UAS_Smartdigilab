@@ -11,6 +11,7 @@ class Borrowing extends Model
         'user_id',
         'borrower_id',
         'equipment_id',
+        'jumlah',
         'request_letter_path',
         'borrow_date',
         'return_date',

@@ -29,6 +29,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('borrowings', [BorrowingController::class, 'store'])->name('borrowings.store');
     Route::get('borrowings/success', [BorrowingController::class, 'success'])->name('borrowings.success');
     Route::get('my/borrowings', [BorrowingController::class, 'my'])->name('borrowings.my');
+    Route::get('borrowings', [BorrowingController::class, 'index'])->name('borrowings.index');
+    Route::get('borrowings/{borrowing}/letter', [BorrowingController::class, 'letter'])->name('borrowings.letter');
 
     Route::middleware(['admin'])->group(function () {
         // Equipment Management Routes (Admin)
@@ -40,7 +42,6 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('equipment/{equipment}', [EquipmentController::class, 'destroy'])->name('equipment.destroy');
 
         // Borrowing Admin Routes
-        Route::get('borrowings', [BorrowingController::class, 'index'])->name('borrowings.index');
         Route::get('borrowings/{borrowing}', [BorrowingController::class, 'show'])->name('borrowings.show');
         Route::get('borrowings/{borrowing}/edit', [BorrowingController::class, 'edit'])->name('borrowings.edit');
         Route::put('borrowings/{borrowing}', [BorrowingController::class, 'update'])->name('borrowings.update');

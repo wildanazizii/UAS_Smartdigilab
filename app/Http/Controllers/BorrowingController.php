@@ -7,7 +7,9 @@ use App\Models\Equipment;
 use App\Models\Borrower;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class BorrowingController extends Controller
 {
@@ -16,9 +18,14 @@ class BorrowingController extends Controller
      */
     public function index()
     {
-        $borrowings = Borrowing::with(['borrower', 'equipment'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        $query = Borrowing::with(['borrower', 'equipment'])
+            ->orderBy('created_at', 'desc');
+
+        if (Auth::user()?->role !== 'admin') {
+            $query->where('user_id', Auth::id());
+        }
+
+        $borrowings = $query->paginate(15);
         
         return view('borrowings.index', compact('borrowings'));
     }
@@ -28,7 +35,9 @@ class BorrowingController extends Controller
      */
     public function create()
     {
-        $equipment = Equipment::where('availability_status', 'tersedia')->get();
+        $equipment = Equipment::where('availability_status', 'tersedia')
+            ->where('quantity', '>', 0)
+            ->get();
         return view('borrowings.create', compact('equipment'));
     }
 
@@ -42,6 +51,7 @@ class BorrowingController extends Controller
             'borrower_nim' => 'required|string|max:255',
             'borrower_contact' => 'required|string|max:255',
             'equipment_id' => 'required|exists:equipment,id',
+            'jumlah' => 'required|integer|min:1',
             'borrow_date' => 'required|date',
             'request_letter' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
@@ -60,19 +70,31 @@ class BorrowingController extends Controller
             ]
         );
 
-        // Create borrowing
-        Borrowing::create([
-            'user_id' => Auth::id(),
-            'borrower_id' => $borrower->id,
-            'equipment_id' => $validated['equipment_id'],
-            'request_letter_path' => $requestLetterPath,
-            'borrow_date' => $validated['borrow_date'],
-            'status' => 'dipinjam'
-        ]);
+        DB::transaction(function () use ($validated, $borrower, $requestLetterPath) {
+            $equipment = Equipment::lockForUpdate()->findOrFail($validated['equipment_id']);
 
-        // Update equipment status
-        $equipment = Equipment::find($validated['equipment_id']);
-        $equipment->update(['availability_status' => 'dipinjam']);
+            if ((int) $equipment->quantity < (int) $validated['jumlah']) {
+                throw ValidationException::withMessages([
+                    'jumlah' => 'Stok alat tidak mencukupi.'
+                ]);
+            }
+
+            // Create borrowing
+            Borrowing::create([
+                'user_id' => Auth::id(),
+                'borrower_id' => $borrower->id,
+                'equipment_id' => $validated['equipment_id'],
+                'jumlah' => $validated['jumlah'],
+                'request_letter_path' => $requestLetterPath,
+                'borrow_date' => $validated['borrow_date'],
+                'status' => 'dipinjam'
+            ]);
+
+            // Reduce stock
+            $equipment->quantity = (int) $equipment->quantity - (int) $validated['jumlah'];
+            $equipment->availability_status = ((int) $equipment->quantity === 0) ? 'dipinjam' : 'tersedia';
+            $equipment->save();
+        });
 
         return redirect()->route('borrowings.success')
             ->with('success', 'Peminjaman berhasil dicatat!');
@@ -83,6 +105,10 @@ class BorrowingController extends Controller
      */
     public function show(Borrowing $borrowing)
     {
+        if (Auth::user()?->role !== 'admin' && (int) $borrowing->user_id !== (int) Auth::id()) {
+            abort(403);
+        }
+
         $borrowing->load(['borrower', 'equipment']);
         return view('borrowings.show', compact('borrowing'));
     }
@@ -107,12 +133,18 @@ class BorrowingController extends Controller
             'status' => 'required|in:dipinjam,dikembalikan'
         ]);
 
-        $borrowing->update($validated);
+        DB::transaction(function () use ($validated, $borrowing) {
+            $previousStatus = $borrowing->status;
 
-        // Update equipment status if returned
-        if ($validated['status'] === 'dikembalikan') {
-            $borrowing->equipment->update(['availability_status' => 'tersedia']);
-        }
+            $borrowing->update($validated);
+
+            if ($previousStatus !== 'dikembalikan' && $validated['status'] === 'dikembalikan') {
+                $equipment = Equipment::lockForUpdate()->findOrFail($borrowing->equipment_id);
+                $equipment->quantity = (int) $equipment->quantity + (int) ($borrowing->jumlah ?? 1);
+                $equipment->availability_status = 'tersedia';
+                $equipment->save();
+            }
+        });
 
         return redirect()->route('borrowings.index')
             ->with('success', 'Data peminjaman berhasil diperbarui!');
@@ -125,12 +157,16 @@ class BorrowingController extends Controller
     {
         $requestLetterPath = $borrowing->request_letter_path;
 
-        // Update equipment status back to available if borrowed
-        if ($borrowing->status === 'dipinjam') {
-            $borrowing->equipment->update(['availability_status' => 'tersedia']);
-        }
+        DB::transaction(function () use ($borrowing) {
+            if ($borrowing->status === 'dipinjam') {
+                $equipment = Equipment::lockForUpdate()->findOrFail($borrowing->equipment_id);
+                $equipment->quantity = (int) $equipment->quantity + (int) ($borrowing->jumlah ?? 1);
+                $equipment->availability_status = 'tersedia';
+                $equipment->save();
+            }
 
-        $borrowing->delete();
+            $borrowing->delete();
+        });
 
         if ($requestLetterPath) {
             Storage::disk('public')->delete($requestLetterPath);
@@ -163,14 +199,40 @@ class BorrowingController extends Controller
      */
     public function returnEquipment(Borrowing $borrowing)
     {
-        $borrowing->update([
-            'return_date' => now(),
-            'status' => 'dikembalikan'
-        ]);
+        DB::transaction(function () use ($borrowing) {
+            if ($borrowing->status === 'dikembalikan') {
+                return;
+            }
 
-        $borrowing->equipment->update(['availability_status' => 'tersedia']);
+            $borrowing->update([
+                'return_date' => now(),
+                'status' => 'dikembalikan'
+            ]);
+
+            $equipment = Equipment::lockForUpdate()->findOrFail($borrowing->equipment_id);
+            $equipment->quantity = (int) $equipment->quantity + (int) ($borrowing->jumlah ?? 1);
+            $equipment->availability_status = 'tersedia';
+            $equipment->save();
+        });
 
         return redirect()->route('borrowings.index')
             ->with('success', 'Alat berhasil dikembalikan!');
+    }
+
+    public function letter(Borrowing $borrowing)
+    {
+        if (Auth::user()?->role !== 'admin' && (int) $borrowing->user_id !== (int) Auth::id()) {
+            abort(403);
+        }
+
+        if (! $borrowing->request_letter_path) {
+            abort(404);
+        }
+
+        if (! Storage::disk('public')->exists($borrowing->request_letter_path)) {
+            abort(404);
+        }
+
+        return Storage::disk('public')->response($borrowing->request_letter_path);
     }
 }

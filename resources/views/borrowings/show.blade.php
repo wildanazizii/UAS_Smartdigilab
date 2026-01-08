@@ -48,6 +48,10 @@
                         <label class="block text-sm font-medium text-gray-500 mb-1">Kode Alat</label>
                         <p class="text-gray-900 font-mono font-bold">{{ $borrowing->equipment->code }}</p>
                     </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Jumlah</label>
+                        <p class="text-gray-900 font-semibold">{{ $borrowing->jumlah ?? 1 }}</p>
+                    </div>
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-500 mb-1">Deskripsi</label>
                         <p class="text-gray-700">{{ $borrowing->equipment->description }}</p>
@@ -92,7 +96,7 @@
                 <div class="mt-4">
                     <label class="block text-sm font-medium text-gray-500 mb-1">Surat Pengajuan</label>
                     @if($borrowing->request_letter_path)
-                        <a href="{{ asset('storage/' . $borrowing->request_letter_path) }}" target="_blank" class="text-blue-600 hover:text-blue-900">
+                        <a href="{{ route('borrowings.letter', $borrowing) }}" target="_blank" class="text-blue-600 hover:text-blue-900">
                             <i class="fas fa-file-arrow-up mr-2"></i>Lihat Surat
                         </a>
                     @else
