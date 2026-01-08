@@ -13,6 +13,21 @@
         <p class="text-gray-600">Selamat datang di SmartDigiLab - Kelola inventaris dan peminjaman alat laboratorium dengan mudah</p>
     </div>
 
+    @guest
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg shadow-md">
+            <div class="flex items-start">
+                <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                <div>
+                    <p class="font-semibold text-blue-800">Silakan login untuk mengajukan peminjaman</p>
+                    <p class="text-sm text-blue-700 mt-1">Anda bisa login sebagai user atau admin.</p>
+                    <a href="{{ route('login') }}" class="inline-block mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                        <i class="fas fa-right-to-bracket mr-2"></i>Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    @endguest
+
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
@@ -71,22 +86,31 @@
             Aksi Cepat
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <a href="{{ route('equipment.create') }}" class="bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 rounded-lg p-4 text-center transition transform hover:scale-105">
-                <i class="fas fa-plus-circle text-blue-600 text-3xl mb-2"></i>
-                <p class="text-blue-800 font-semibold">Tambah Alat</p>
-            </a>
-            <a href="{{ route('borrowings.create') }}" class="bg-green-50 hover:bg-green-100 border-2 border-green-200 rounded-lg p-4 text-center transition transform hover:scale-105">
-                <i class="fas fa-hand-holding text-green-600 text-3xl mb-2"></i>
-                <p class="text-green-800 font-semibold">Pinjam Alat</p>
-            </a>
-            <a href="{{ route('borrowings.index') }}" class="bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 rounded-lg p-4 text-center transition transform hover:scale-105">
-                <i class="fas fa-tasks text-purple-600 text-3xl mb-2"></i>
-                <p class="text-purple-800 font-semibold">Kelola Peminjaman</p>
-            </a>
-            <a href="{{ route('reports.index') }}" class="bg-orange-50 hover:bg-orange-100 border-2 border-orange-200 rounded-lg p-4 text-center transition transform hover:scale-105">
-                <i class="fas fa-chart-line text-orange-600 text-3xl mb-2"></i>
-                <p class="text-orange-800 font-semibold">Lihat Laporan</p>
-            </a>
+            @auth
+                <a href="{{ route('borrowings.create') }}" class="bg-green-50 hover:bg-green-100 border-2 border-green-200 rounded-lg p-4 text-center transition transform hover:scale-105">
+                    <i class="fas fa-hand-holding text-green-600 text-3xl mb-2"></i>
+                    <p class="text-green-800 font-semibold">Ajukan Peminjaman</p>
+                </a>
+                <a href="{{ route('borrowings.my') }}" class="bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 rounded-lg p-4 text-center transition transform hover:scale-105">
+                    <i class="fas fa-list-check text-blue-600 text-3xl mb-2"></i>
+                    <p class="text-blue-800 font-semibold">Status Pengajuan</p>
+                </a>
+
+                @if(auth()->user()->role === 'admin')
+                    <a href="{{ route('equipment.create') }}" class="bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 rounded-lg p-4 text-center transition transform hover:scale-105">
+                        <i class="fas fa-plus-circle text-blue-600 text-3xl mb-2"></i>
+                        <p class="text-blue-800 font-semibold">Tambah Alat</p>
+                    </a>
+                    <a href="{{ route('borrowings.index') }}" class="bg-purple-50 hover:bg-purple-100 border-2 border-purple-200 rounded-lg p-4 text-center transition transform hover:scale-105">
+                        <i class="fas fa-tasks text-purple-600 text-3xl mb-2"></i>
+                        <p class="text-purple-800 font-semibold">Kelola Peminjaman</p>
+                    </a>
+                    <a href="{{ route('reports.index') }}" class="bg-orange-50 hover:bg-orange-100 border-2 border-orange-200 rounded-lg p-4 text-center transition transform hover:scale-105">
+                        <i class="fas fa-chart-line text-orange-600 text-3xl mb-2"></i>
+                        <p class="text-orange-800 font-semibold">Lihat Laporan</p>
+                    </a>
+                @endif
+            @endauth
         </div>
     </div>
 

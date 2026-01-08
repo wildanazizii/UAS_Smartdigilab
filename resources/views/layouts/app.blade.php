@@ -22,18 +22,38 @@
                     <a href="{{ route('dashboard') }}" class="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium transition">
                         <i class="fas fa-home mr-1"></i> Dashboard
                     </a>
-                    <a href="{{ route('equipment.index') }}" class="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium transition">
-                        <i class="fas fa-box mr-1"></i> Inventaris
-                    </a>
-                    <a href="{{ route('borrowings.create') }}" class="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium transition">
-                        <i class="fas fa-hand-holding mr-1"></i> Pinjam Alat
-                    </a>
-                    <a href="{{ route('borrowings.index') }}" class="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium transition">
-                        <i class="fas fa-list mr-1"></i> Admin
-                    </a>
-                    <a href="{{ route('reports.index') }}" class="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium transition">
-                        <i class="fas fa-chart-bar mr-1"></i> Laporan
-                    </a>
+
+                    @auth
+                        <a href="{{ route('borrowings.create') }}" class="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium transition">
+                            <i class="fas fa-hand-holding mr-1"></i> Ajukan
+                        </a>
+                        <a href="{{ route('borrowings.my') }}" class="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium transition">
+                            <i class="fas fa-list-check mr-1"></i> Status Saya
+                        </a>
+
+                        @if(auth()->user()->role === 'admin')
+                            <a href="{{ route('equipment.index') }}" class="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium transition">
+                                <i class="fas fa-box mr-1"></i> Inventaris
+                            </a>
+                            <a href="{{ route('borrowings.index') }}" class="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium transition">
+                                <i class="fas fa-list mr-1"></i> Admin
+                            </a>
+                            <a href="{{ route('reports.index') }}" class="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium transition">
+                                <i class="fas fa-chart-bar mr-1"></i> Laporan
+                            </a>
+                        @endif
+
+                        <form method="POST" action="{{ route('logout') }}" class="inline">
+                            @csrf
+                            <button type="submit" class="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium transition">
+                                <i class="fas fa-right-from-bracket mr-1"></i> Logout
+                            </button>
+                        </form>
+                    @else
+                        <a href="{{ route('login') }}" class="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium transition">
+                            <i class="fas fa-right-to-bracket mr-1"></i> Login
+                        </a>
+                    @endauth
                 </div>
             </div>
         </div>

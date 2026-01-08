@@ -6,6 +6,8 @@ use App\Models\Borrowing;
 use App\Models\Equipment;
 use App\Models\Borrower;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class BorrowingController extends Controller
 {
@@ -41,7 +43,13 @@ class BorrowingController extends Controller
             'borrower_contact' => 'required|string|max:255',
             'equipment_id' => 'required|exists:equipment,id',
             'borrow_date' => 'required|date',
+            'request_letter' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
+
+        $requestLetterPath = null;
+        if ($request->hasFile('request_letter')) {
+            $requestLetterPath = $request->file('request_letter')->store('request_letters', 'public');
+        }
 
         // Create or find borrower
         $borrower = Borrower::firstOrCreate(
@@ -54,8 +62,10 @@ class BorrowingController extends Controller
 
         // Create borrowing
         Borrowing::create([
+            'user_id' => Auth::id(),
             'borrower_id' => $borrower->id,
             'equipment_id' => $validated['equipment_id'],
+            'request_letter_path' => $requestLetterPath,
             'borrow_date' => $validated['borrow_date'],
             'status' => 'dipinjam'
         ]);
@@ -113,12 +123,18 @@ class BorrowingController extends Controller
      */
     public function destroy(Borrowing $borrowing)
     {
+        $requestLetterPath = $borrowing->request_letter_path;
+
         // Update equipment status back to available if borrowed
         if ($borrowing->status === 'dipinjam') {
             $borrowing->equipment->update(['availability_status' => 'tersedia']);
         }
 
         $borrowing->delete();
+
+        if ($requestLetterPath) {
+            Storage::disk('public')->delete($requestLetterPath);
+        }
 
         return redirect()->route('borrowings.index')
             ->with('success', 'Data peminjaman berhasil dihapus!');
@@ -130,6 +146,16 @@ class BorrowingController extends Controller
     public function success()
     {
         return view('borrowings.success');
+    }
+
+    public function my()
+    {
+        $borrowings = Borrowing::with(['borrower', 'equipment'])
+            ->where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return view('borrowings.my', compact('borrowings'));
     }
 
     /**

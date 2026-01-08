@@ -14,7 +14,7 @@
         </div>
 
         @if($equipment->count() > 0)
-            <form action="{{ route('borrowings.store') }}" method="POST" class="space-y-6">
+            <form action="{{ route('borrowings.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                 @csrf
 
                 <!-- Borrower Information -->
@@ -59,6 +59,23 @@
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
+                    </div>
+                </div>
+
+                <div class="bg-purple-50 border-l-4 border-purple-500 p-4 mb-6">
+                    <h2 class="font-semibold text-purple-800 mb-3">
+                        <i class="fas fa-file-arrow-up mr-2"></i>Surat Pengajuan (Opsional)
+                    </h2>
+                    <div>
+                        <label for="request_letter" class="block text-sm font-medium text-gray-700 mb-2">
+                            Upload Surat
+                        </label>
+                        <input type="file" name="request_letter" id="request_letter" accept=".pdf,.jpg,.jpeg,.png"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent @error('request_letter') border-red-500 @enderror">
+                        @error('request_letter')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-1 text-sm text-gray-500">Format: PDF/JPG/PNG. Maks: 2MB.</p>
                     </div>
                 </div>
 

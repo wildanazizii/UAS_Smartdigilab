@@ -105,16 +105,18 @@
 
             <!-- Actions -->
             <div class="flex justify-between items-center pt-6 border-t">
-                <a href="{{ route('equipment.index') }}" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+                <a href="{{ route('dashboard') }}" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
                     <i class="fas fa-arrow-left mr-2"></i>Kembali
                 </a>
                 <div class="flex space-x-3">
                     <a href="{{ route('equipment.qrcode', $equipment) }}" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition">
                         <i class="fas fa-qrcode mr-2"></i>QR Code
                     </a>
-                    <a href="{{ route('equipment.edit', $equipment) }}" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
-                        <i class="fas fa-edit mr-2"></i>Edit
-                    </a>
+                    @if(auth()->check() && auth()->user()->role === 'admin')
+                        <a href="{{ route('equipment.edit', $equipment) }}" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition">
+                            <i class="fas fa-edit mr-2"></i>Edit
+                        </a>
+                    @endif
                 </div>
             </div>
         </div>

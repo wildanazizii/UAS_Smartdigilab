@@ -66,6 +66,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pinjam</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Kembali</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Surat</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
@@ -108,6 +109,15 @@
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                         <i class="fas fa-check-circle mr-1"></i> Dikembalikan
                                     </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                @if($borrowing->request_letter_path)
+                                    <a href="{{ asset('storage/' . $borrowing->request_letter_path) }}" target="_blank" class="text-blue-600 hover:text-blue-900">
+                                        <i class="fas fa-file-arrow-up mr-1"></i>Lihat
+                                    </a>
+                                @else
+                                    <span class="text-gray-400">-</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">

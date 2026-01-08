@@ -88,6 +88,17 @@
                         @endif
                     </div>
                 </div>
+
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Surat Pengajuan</label>
+                    @if($borrowing->request_letter_path)
+                        <a href="{{ asset('storage/' . $borrowing->request_letter_path) }}" target="_blank" class="text-blue-600 hover:text-blue-900">
+                            <i class="fas fa-file-arrow-up mr-2"></i>Lihat Surat
+                        </a>
+                    @else
+                        <p class="text-gray-400">-</p>
+                    @endif
+                </div>
             </div>
 
             <!-- Actions -->
